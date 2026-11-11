@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import machines from './machines.json'
 import './App.css'
 
@@ -18,6 +19,15 @@ const statusLabels = {
 }
 
 function App() {
+  const [selectedZone, setSelectedZone] = useState('all')
+  const [selectedStatus, setSelectedStatus] = useState('all')
+
+  const zones = [...new Set(machines.map((machine) => machine.zone))].sort()
+  const filteredMachines = machines.filter((machine) => (
+    (selectedZone === 'all' || machine.zone === selectedZone)
+    && (selectedStatus === 'all' || machine.status === selectedStatus)
+  ))
+
   const counts = {
     total: machines.length,
     running: machines.filter((machine) => machine.status === 'running').length,
@@ -108,24 +118,58 @@ function App() {
               <h2 id="machines-title">État des machines</h2>
               <p>Consultez le statut actuel de chaque équipement.</p>
             </div>
-            <span className="machine-count">{machines.length} machines</span>
+            <span className="machine-count">
+              {filteredMachines.length} / {machines.length} machines
+            </span>
+          </div>
+          <div className="machine-filters" aria-label="Filtres des machines">
+            <label className="filter-field">
+              <span>Zone</span>
+              <select value={selectedZone} onChange={(event) => setSelectedZone(event.target.value)}>
+                <option value="all">Toutes les zones</option>
+                {zones.map((zone) => <option value={zone} key={zone}>{zone}</option>)}
+              </select>
+            </label>
+            <label className="filter-field">
+              <span>Statut</span>
+              <select value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)}>
+                <option value="all">Tous les statuts</option>
+                {Object.entries(statusLabels).map(([status, label]) => (
+                  <option value={status} key={status}>{label}</option>
+                ))}
+              </select>
+            </label>
+            {(selectedZone !== 'all' || selectedStatus !== 'all') && (
+              <button
+                className="filter-reset"
+                type="button"
+                onClick={() => {
+                  setSelectedZone('all')
+                  setSelectedStatus('all')
+                }}
+              >
+                Réinitialiser
+              </button>
+            )}
           </div>
           <div className="table-scroll">
             <table>
               <thead>
                 <tr>
                   <th scope="col">Machine</th>
+                  <th scope="col">Zone</th>
                   <th scope="col">Emplacement</th>
                   <th scope="col">Statut</th>
                 </tr>
               </thead>
               <tbody>
-                {machines.map((machine) => (
+                {filteredMachines.map((machine) => (
                   <tr key={machine.id}>
                     <td>
                       <span className="machine-name">{machine.name}</span>
                       <span className="machine-id">{machine.id}</span>
                     </td>
+                    <td>{machine.zone}</td>
                     <td>{machine.location}</td>
                     <td>
                       <span className={`status-pill ${machine.status}`}>
@@ -135,6 +179,13 @@ function App() {
                     </td>
                   </tr>
                 ))}
+                {filteredMachines.length === 0 && (
+                  <tr>
+                    <td className="empty-machines" colSpan="4">
+                      Aucune machine ne correspond à ces filtres.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

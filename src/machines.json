@@ -3,48 +3,56 @@
     "id": "MCH-001",
     "name": "Presse hydraulique",
     "location": "Atelier A",
+    "zone": "Zone A",
     "status": "running"
   },
   {
     "id": "MCH-002",
     "name": "Tour CNC",
     "location": "Atelier A",
+    "zone": "Zone A",
     "status": "running"
   },
   {
     "id": "MCH-003",
     "name": "Convoyeur principal",
     "location": "Atelier B",
+    "zone": "Zone B",
     "status": "stopped"
   },
   {
     "id": "MCH-004",
     "name": "Robot d’assemblage",
     "location": "Atelier B",
+    "zone": "Zone B",
     "status": "running"
   },
   {
     "id": "MCH-005",
     "name": "Compresseur",
     "location": "Salle technique",
+    "zone": "Zone C",
     "status": "failure"
   },
   {
     "id": "MCH-006",
     "name": "Découpe laser",
     "location": "Atelier A",
+    "zone": "Zone A",
     "status": "running"
   },
   {
     "id": "MCH-007",
     "name": "Fraiseuse CNC",
     "location": "Atelier C",
+    "zone": "Zone C",
     "status": "stopped"
   },
   {
     "id": "MCH-008",
     "name": "Pompe de refroidissement",
     "location": "Atelier C",
+    "zone": "Zone C",
     "status": "running"
   }
 ]

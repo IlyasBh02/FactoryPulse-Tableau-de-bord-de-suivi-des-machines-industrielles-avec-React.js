@@ -273,6 +273,56 @@
   font-size: 13px;
 }
 
+.machine-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid #eff0f5;
+  background: #fcfcfe;
+}
+
+.filter-field {
+  display: grid;
+  gap: 6px;
+  color: #777d91;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.filter-field select {
+  min-width: 180px;
+  padding: 9px 32px 9px 11px;
+  border: 1px solid #e3e5ed;
+  border-radius: 8px;
+  background: #fff;
+  color: #33374c;
+  font: inherit;
+}
+
+.filter-field select:focus-visible,
+.filter-reset:focus-visible {
+  outline: 2px solid #6258d9;
+  outline-offset: 2px;
+}
+
+.filter-reset {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #6258d9;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.filter-reset:hover {
+  background: #f0efff;
+}
+
 .machine-count {
   padding: 6px 10px;
   border-radius: 20px;
@@ -315,6 +365,12 @@ td {
 
 tbody tr:last-child td {
   border-bottom: 0;
+}
+
+.empty-machines {
+  padding: 28px 24px;
+  color: #858b9d;
+  text-align: center;
 }
 
 .machine-name,
@@ -431,6 +487,20 @@ tbody tr:last-child td {
 
   .section-heading {
     padding: 18px 16px;
+  }
+
+  .machine-filters {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 14px 16px;
+  }
+
+  .filter-field select {
+    width: 100%;
+  }
+
+  .filter-reset {
+    align-self: flex-start;
   }
 
   .production-section {
