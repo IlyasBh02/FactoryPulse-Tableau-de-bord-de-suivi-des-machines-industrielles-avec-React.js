@@ -1,15 +1,5 @@
+import machines from './machines.json'
 import './App.css'
-
-const machines = [
-  { id: 'MCH-001', name: 'Presse hydraulique', location: 'Atelier A', status: 'running' },
-  { id: 'MCH-002', name: 'Tour CNC', location: 'Atelier A', status: 'running' },
-  { id: 'MCH-003', name: 'Convoyeur principal', location: 'Atelier B', status: 'stopped' },
-  { id: 'MCH-004', name: 'Robot d’assemblage', location: 'Atelier B', status: 'running' },
-  { id: 'MCH-005', name: 'Compresseur', location: 'Salle technique', status: 'failure' },
-  { id: 'MCH-006', name: 'Découpe laser', location: 'Atelier A', status: 'running' },
-  { id: 'MCH-007', name: 'Fraiseuse CNC', location: 'Atelier C', status: 'stopped' },
-  { id: 'MCH-008', name: 'Pompe de refroidissement', location: 'Atelier C', status: 'running' },
-]
 
 const dailyProduction = [
   { day: 'Lun', total: 980 },
@@ -149,7 +139,7 @@ function App() {
             </table>
           </div>
         </section>
-        <p className="data-note">Les chiffres affichés sont des exemples. Remplacez la liste de démonstration par les données de vos machines.</p>
+        <p className="data-note">La liste des machines est chargée depuis <code>src/machines.json</code>. Remplacez les exemples par vos données.</p>
       </section>
     </main>
   )
