@@ -11,6 +11,16 @@ const machines = [
   { id: 'MCH-008', name: 'Pompe de refroidissement', location: 'Atelier C', status: 'running' },
 ]
 
+const dailyProduction = [
+  { day: 'Lun', total: 980 },
+  { day: 'Mar', total: 1120 },
+  { day: 'Mer', total: 1050 },
+  { day: 'Jeu', total: 1280 },
+  { day: 'Ven', total: 1160 },
+  { day: 'Sam', total: 890 },
+  { day: 'Dim', total: 1248 },
+]
+
 const statusLabels = {
   running: 'En fonctionnement',
   stopped: 'À l’arrêt',
@@ -31,6 +41,8 @@ function App() {
     { key: 'stopped', label: 'À l’arrêt', value: counts.stopped, icon: 'Ⅱ', tone: 'amber' },
     { key: 'failure', label: 'En panne', value: counts.failure, icon: '!', tone: 'red' },
   ]
+  const todayProduction = dailyProduction[dailyProduction.length - 1]
+  const maxDailyProduction = Math.max(...dailyProduction.map((day) => day.total))
 
   return (
     <main className="dashboard">
@@ -65,6 +77,39 @@ function App() {
               </p>
             </article>
           ))}
+        </section>
+
+        <section className="production-section" aria-labelledby="production-title">
+          <div className="production-summary">
+            <div className="production-heading">
+              <p className="eyebrow">PRODUCTION</p>
+              <h2 id="production-title">Production journalière</h2>
+              <p>Quantité totale produite cette semaine.</p>
+            </div>
+            <div className="production-today">
+              <span className="production-today-label">Aujourd’hui · {todayProduction.day}</span>
+              <strong>{todayProduction.total.toLocaleString('fr-FR')}</strong>
+              <span className="production-unit">unités produites</span>
+            </div>
+          </div>
+          <div
+            className="production-chart"
+            role="img"
+            aria-label={`Production hebdomadaire en unités : ${dailyProduction.map(({ day, total }) => `${day}, ${total}`).join('; ')}`}
+          >
+            {dailyProduction.map(({ day, total }) => (
+              <div className="production-day" key={day}>
+                <span className="production-bar-value">{total.toLocaleString('fr-FR')}</span>
+                <div className="production-bar-track">
+                  <div
+                    className={`production-bar${day === todayProduction.day ? ' today' : ''}`}
+                    style={{ height: `${(total / maxDailyProduction) * 100}%` }}
+                  />
+                </div>
+                <span className="production-day-label">{day}</span>
+              </div>
+            ))}
+          </div>
         </section>
 
         <section className="machine-section" aria-labelledby="machines-title">
