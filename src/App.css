@@ -290,7 +290,8 @@
   font-weight: 600;
 }
 
-.filter-field select {
+.filter-field select,
+.filter-field input {
   min-width: 180px;
   padding: 9px 32px 9px 11px;
   border: 1px solid #e3e5ed;
@@ -300,7 +301,12 @@
   font: inherit;
 }
 
+.filter-field input {
+  min-width: 220px;
+}
+
 .filter-field select:focus-visible,
+.filter-field input:focus-visible,
 .filter-reset:focus-visible {
   outline: 2px solid #6258d9;
   outline-offset: 2px;
@@ -495,7 +501,8 @@ tbody tr:last-child td {
     padding: 14px 16px;
   }
 
-  .filter-field select {
+  .filter-field select,
+  .filter-field input {
     width: 100%;
   }
 

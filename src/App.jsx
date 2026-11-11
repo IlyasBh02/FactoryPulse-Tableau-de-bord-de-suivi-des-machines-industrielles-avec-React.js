@@ -21,11 +21,14 @@ const statusLabels = {
 function App() {
   const [selectedZone, setSelectedZone] = useState('all')
   const [selectedStatus, setSelectedStatus] = useState('all')
+  const [searchName, setSearchName] = useState('')
 
   const zones = [...new Set(machines.map((machine) => machine.zone))].sort()
+  const normalizedSearch = searchName.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr')
   const filteredMachines = machines.filter((machine) => (
     (selectedZone === 'all' || machine.zone === selectedZone)
     && (selectedStatus === 'all' || machine.status === selectedStatus)
+    && machine.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr').includes(normalizedSearch)
   ))
 
   const counts = {
@@ -123,6 +126,15 @@ function App() {
             </span>
           </div>
           <div className="machine-filters" aria-label="Filtres des machines">
+            <label className="filter-field search-field">
+              <span>Rechercher une machine</span>
+              <input
+                type="search"
+                value={searchName}
+                onChange={(event) => setSearchName(event.target.value)}
+                placeholder="Nom de l’équipement"
+              />
+            </label>
             <label className="filter-field">
               <span>Zone</span>
               <select value={selectedZone} onChange={(event) => setSelectedZone(event.target.value)}>
@@ -139,11 +151,12 @@ function App() {
                 ))}
               </select>
             </label>
-            {(selectedZone !== 'all' || selectedStatus !== 'all') && (
+            {(searchName || selectedZone !== 'all' || selectedStatus !== 'all') && (
               <button
                 className="filter-reset"
                 type="button"
                 onClick={() => {
+                  setSearchName('')
                   setSelectedZone('all')
                   setSelectedStatus('all')
                 }}
@@ -182,7 +195,7 @@ function App() {
                 {filteredMachines.length === 0 && (
                   <tr>
                     <td className="empty-machines" colSpan="4">
-                      Aucune machine ne correspond à ces filtres.
+                      Aucune machine ne correspond à votre recherche et à vos filtres.
                     </td>
                   </tr>
                 )}
