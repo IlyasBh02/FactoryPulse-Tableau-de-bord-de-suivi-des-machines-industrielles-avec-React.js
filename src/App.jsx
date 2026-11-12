@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import machines from './machines.json'
+import seedMachines from './machines.json'
 import './App.css'
 
 const dailyProduction = [
@@ -18,11 +18,93 @@ const statusLabels = {
   failure: 'En panne',
 }
 
+const addedMachinesStorageKey = 'factoryplus-added-machines'
+
+function isValidAddedMachine(machine) {
+  return machine
+    && typeof machine.id === 'string'
+    && typeof machine.name === 'string'
+    && typeof machine.zone === 'string'
+    && typeof machine.location === 'string'
+    && Object.hasOwn(statusLabels, machine.status)
+    && Number.isFinite(machine.production)
+    && typeof machine.lastMaintenance === 'string'
+}
+
+function loadSavedMachines() {
+  try {
+    const savedMachines = window.localStorage.getItem(addedMachinesStorageKey)
+    if (savedMachines === null) return { machines: [], message: '' }
+
+    const parsedMachines = JSON.parse(savedMachines)
+    if (!Array.isArray(parsedMachines) || !parsedMachines.every(isValidAddedMachine)) {
+      throw new Error('Les données enregistrées ne sont pas valides.')
+    }
+
+    return { machines: parsedMachines, message: '' }
+  } catch {
+    return {
+      machines: [],
+      message: 'Les machines enregistrées n’ont pas pu être chargées. Vous pouvez continuer à utiliser le tableau de bord.',
+    }
+  }
+}
+
+function AddMachinePage({ onCancel, onAdd }) {
+  return (
+    <section className="dashboard-content form-content" aria-labelledby="add-machine-title">
+      <div className="page-heading">
+        <div>
+          <p className="eyebrow">GESTION DU PARC</p>
+          <h1 id="add-machine-title">Ajouter une machine</h1>
+          <p className="subtitle">Renseignez les informations du nouvel équipement.</p>
+        </div>
+      </div>
+
+      <form className="machine-form" onSubmit={onAdd}>
+        <label className="form-field">
+          <span>Nom de l’équipement</span>
+          <input name="name" type="text" maxLength="80" placeholder="Ex. Presse hydraulique" required />
+        </label>
+        <label className="form-field">
+          <span>Zone</span>
+          <input name="zone" type="text" maxLength="40" placeholder="Ex. Zone A" required />
+        </label>
+        <label className="form-field">
+          <span>Statut initial</span>
+          <select name="status" defaultValue="running" required>
+            {Object.entries(statusLabels).map(([status, label]) => (
+              <option value={status} key={status}>{label}</option>
+            ))}
+          </select>
+        </label>
+        <label className="form-field">
+          <span>Production (unités)</span>
+          <input name="production" type="number" min="0" step="1" defaultValue="0" required />
+        </label>
+        <label className="form-field">
+          <span>Date de dernière maintenance</span>
+          <input name="lastMaintenance" type="date" required />
+        </label>
+        <div className="form-actions">
+          <button className="form-cancel" type="button" onClick={onCancel}>Annuler</button>
+          <button className="form-submit" type="submit">Ajouter la machine</button>
+        </div>
+      </form>
+      <p className="data-note">Les nouvelles machines sont enregistrées dans ce navigateur.</p>
+    </section>
+  )
+}
+
 function App() {
+  const [savedState, setSavedState] = useState(loadSavedMachines)
+  const [currentPage, setCurrentPage] = useState('dashboard')
   const [selectedZone, setSelectedZone] = useState('all')
   const [selectedStatus, setSelectedStatus] = useState('all')
   const [searchName, setSearchName] = useState('')
 
+  const { machines: addedMachines, message: storageMessage } = savedState
+  const machines = [...seedMachines, ...addedMachines]
   const zones = [...new Set(machines.map((machine) => machine.zone))].sort()
   const normalizedSearch = searchName.trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('fr')
   const filteredMachines = machines.filter((machine) => (
@@ -47,6 +129,35 @@ function App() {
   const todayProduction = dailyProduction[dailyProduction.length - 1]
   const maxDailyProduction = Math.max(...dailyProduction.map((day) => day.total))
 
+  function handleAddMachine(event) {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const nextNumber = machines.reduce((maximum, machine) => (
+      Math.max(maximum, Number(machine.id.match(/\d+$/)?.[0] ?? 0))
+    ), 0) + 1
+    const newMachine = {
+      id: `MCH-${String(nextNumber).padStart(3, '0')}`,
+      name: String(formData.get('name')).trim(),
+      zone: String(formData.get('zone')).trim(),
+      location: '—',
+      status: String(formData.get('status')),
+      production: Number(formData.get('production')),
+      lastMaintenance: String(formData.get('lastMaintenance')),
+    }
+    const nextAddedMachines = [...addedMachines, newMachine]
+    let message = ''
+    try {
+      window.localStorage.setItem(addedMachinesStorageKey, JSON.stringify(nextAddedMachines))
+    } catch {
+      message = 'Machine ajoutée pour cette session, mais impossible de la conserver après actualisation.'
+    }
+    setSavedState({ machines: nextAddedMachines, message })
+    setSelectedZone('all')
+    setSelectedStatus('all')
+    setSearchName('')
+    setCurrentPage('dashboard')
+  }
+
   return (
     <main className="dashboard">
       <header className="topbar">
@@ -54,10 +165,26 @@ function App() {
           <span className="brand-mark">F</span>
           <span>Factory<span className="brand-light">Plus</span></span>
         </a>
-        <span className="demo-badge"><span /> Données de démonstration</span>
+        <div className="topbar-actions">
+          <span className="demo-badge"><span /> Données de démonstration</span>
+          <button
+            className="add-machine-button"
+            type="button"
+            onClick={() => setCurrentPage(currentPage === 'add' ? 'dashboard' : 'add')}
+          >
+            {currentPage === 'add' ? 'Retour au tableau' : '+ Ajouter une machine'}
+          </button>
+        </div>
       </header>
 
+      {currentPage === 'add' ? (
+        <AddMachinePage
+          onCancel={() => setCurrentPage('dashboard')}
+          onAdd={handleAddMachine}
+        />
+      ) : (
       <section className="dashboard-content" aria-labelledby="dashboard-title">
+        {storageMessage && <p className="storage-message" role="status">{storageMessage}</p>}
         <div className="page-heading">
           <div>
             <p className="eyebrow">VOTRE USINE EN UN COUP D’ŒIL</p>
@@ -173,6 +300,8 @@ function App() {
                   <th scope="col">Zone</th>
                   <th scope="col">Emplacement</th>
                   <th scope="col">Statut</th>
+                  <th scope="col">Production</th>
+                  <th scope="col">Dernière maintenance</th>
                 </tr>
               </thead>
               <tbody>
@@ -190,11 +319,17 @@ function App() {
                         {statusLabels[machine.status]}
                       </span>
                     </td>
+                    <td>{machine.production == null ? '—' : `${machine.production.toLocaleString('fr-FR')} unités`}</td>
+                    <td>
+                      {machine.lastMaintenance
+                        ? new Date(`${machine.lastMaintenance}T00:00:00`).toLocaleDateString('fr-FR')
+                        : '—'}
+                    </td>
                   </tr>
                 ))}
                 {filteredMachines.length === 0 && (
                   <tr>
-                    <td className="empty-machines" colSpan="4">
+                    <td className="empty-machines" colSpan="6">
                       Aucune machine ne correspond à votre recherche et à vos filtres.
                     </td>
                   </tr>
@@ -203,8 +338,9 @@ function App() {
             </table>
           </div>
         </section>
-        <p className="data-note">La liste des machines est chargée depuis <code>src/machines.json</code>. Remplacez les exemples par vos données.</p>
+        <p className="data-note">Les machines de démonstration viennent de <code>src/machines.json</code>. Les nouvelles machines sont conservées dans ce navigateur.</p>
       </section>
+      )}
     </main>
   )
 }
